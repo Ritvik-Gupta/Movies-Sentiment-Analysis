@@ -1,6 +1,6 @@
 from flask import Flask
 
-from dbModel import Engine, Movie, Review
+from dbModel import Engine, Movie
 from movieSentimentAnalysis import classifierPredict, classifierTrainingTesting
 
 app = Flask(__name__)
@@ -8,11 +8,17 @@ app = Flask(__name__)
 
 @app.route("/search/<movieName>")
 def search(movieName: str):
-    movieReviews, positiveReviewPercentage = classifierPredict(movieName)
-    return {
-        "movieReviews": movieReviews,
-        "positiveReviewPercentage": positiveReviewPercentage,
-    }
+    try:
+        movieReviews, positiveReviewPercentage, isDebounced = classifierPredict(
+            movieName
+        )
+        return {
+            "positiveReviewPercentage": positiveReviewPercentage,
+            "isDebounced": isDebounced,
+            "movieReviews": movieReviews,
+        }
+    except Exception as err:
+        return {"error": err.args}
 
 
 def main():

@@ -52,7 +52,7 @@ def classifierTrainingTesting() -> None:
 
 def classifierPredict(movieName: str) -> classifierPrediction:
     classifier = joblib.load("imdb_movies_reviews.pkl")
-    movieReviews = debounceMovieInfo(movieName)
+    movieReviews, isDebounced = debounceMovieInfo(movieName)
 
     tokens: list[list[str]] = []
     for review in movieReviews:
@@ -69,7 +69,7 @@ def classifierPredict(movieName: str) -> classifierPrediction:
     totalPositiveReviews = classification.count("pos")
     positiveReviewPercentage = 100 * totalPositiveReviews / len(classification)
 
-    return movieReviews, positiveReviewPercentage
+    return movieReviews, positiveReviewPercentage, isDebounced
 
 
 # classifierTrainingTesting()

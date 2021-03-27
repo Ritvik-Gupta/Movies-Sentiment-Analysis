@@ -1,28 +1,25 @@
-from sqlalchemy import Column, Integer, String, Table, ForeignKey, DateTime
-from sqlalchemy import create_engine as createEngine, MetaData
+from datetime import datetime
+from typing import Optional
 
-meta = MetaData()
+from sqlalchemy import ARRAY, Column, DateTime, String
+from sqlalchemy.engine import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.expression import select
 
-Engine = createEngine(
+Engine = create_engine(
     "postgresql://postgres:Ageofempire0207@localhost/movies-sentiment-analysis",
     echo=True,
 )
 
-Movie = Table(
-    "movie",
-    meta,
-    Column("name", String(), primary_key=True),
-    Column("last_read_date", DateTime(timezone=False), nullable=False),
-)
+BaseEntity = declarative_base()
 
-Review = Table(
-    "review",
-    meta,
-    Column("movie_name", String(), ForeignKey("movie.name"), primary_key=True),
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("content", String, nullable=False),
-)
+
+class Movie(BaseEntity):
+    __tablename__ = "movie"
+    name = Column(String(), primary_key=True)
+    update_date = Column(DateTime(timezone=False), nullable=False)
+    reviews = Column(ARRAY(String), nullable=False)
+
 
 Connection = Engine.connect()
-
-meta.create_all(Engine)
+BaseEntity.metadata.create_all(bind=Engine)

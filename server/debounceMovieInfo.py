@@ -1,59 +1,43 @@
 from datetime import datetime
+from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, insert, update
 
 from customFns import normalizeMovieName
-from dbModel import Connection, Movie, Review
+from dbModel import Connection, Movie
 from extractMovieReviews import extractMovieReviews
 
 
-def debounceMovieInfo(movieName: str) -> list[str]:
-    normalizedName = normalizeMovieName(movieName)
+def debounceMovieInfo(movieName: str) -> tuple[list[str], bool]:
+    normalizedMovieName = normalizeMovieName(movieName)
+    isDebounced = False
 
-    storedReviews: list[tuple[str]] = Connection.execute(
-        select([Review.c.content]).where(Review.c.movie_name == normalizedName)
-    ).fetchall()
-
-    if len(storedReviews) == 0:
-        movieReviews = extractMovieReviews(normalizedName)
-
-        Connection.execute(
-            Movie.insert(),
-            [{"name": normalizedName, "last_read_date": datetime.now()}],
+    storedMovie: Optional[tuple[datetime, list[str]]] = Connection.execute(
+        select([Movie.update_date, Movie.reviews]).where(
+            Movie.name == normalizedMovieName
         )
+    ).fetchone()
+
+    if storedMovie == None:
+        movieReviews = extractMovieReviews(normalizedMovieName)
+
         Connection.execute(
-            Review.insert(),
-            [
-                {"movie_name": normalizedName, "content": content}
-                for content in movieReviews
-            ],
+            insert(Movie).values(
+                name=normalizedMovieName,
+                update_date=datetime.now(),
+                reviews=movieReviews,
+            )
+        )
+    elif (datetime.now() - storedMovie[0]).seconds > 120:
+        movieReviews = extractMovieReviews(normalizedMovieName)
+
+        Connection.execute(
+            update(Movie)
+            .where(Movie.name == normalizedMovieName)
+            .values(update_date=datetime.now(), reviews=movieReviews)
         )
     else:
-        storedMovie: tuple[datetime] = Connection.execute(
-            select([Movie.c.last_read_date]).where(Movie.c.name == normalizedName)
-        ).fetchone()
-        lastReadDate = storedMovie[0]
+        movieReviews = storedMovie[1]
+        isDebounced = True
 
-        if (datetime.now() - lastReadDate).days > 2:
-            movieReviews = extractMovieReviews(normalizedName)
-
-            Connection.execute(
-                Movie.update()
-                .where(Movie.c.name == normalizedName)
-                .values(last_read_date=datetime.now())
-            )
-            Connection.execute(
-                Review.delete().where(Review.c.movie_name == normalizedName)
-            )
-            Connection.execute(
-                Review.insert(),
-                [
-                    {"movie_name": normalizedName, "content": content}
-                    for content in movieReviews
-                ],
-            )
-
-        else:
-            movieReviews = [review[0] for review in storedReviews]
-
-    return movieReviews
+    return movieReviews, isDebounced
