@@ -8,8 +8,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from customFns import imdbFindUrl, imdbMainUrl
 
 
-def extractReviews(movieName: str) -> list[str]:
-    movieSearchUrlRef = movieName.replace(" ", "%20").lower()
+def extractMovieReviews(movieName: str) -> list[str]:
+    movieSearchUrlRef = movieName.replace(" ", "%20")
 
     imdbFindOpenUrl = openUrlWeb(imdbFindUrl(movieSearchUrlRef))
     imdbFindPage = BeautifulSoup(imdbFindOpenUrl, "lxml")

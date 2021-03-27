@@ -1,8 +1,7 @@
-from typing import Literal
-
 from flask import Flask
 
-from movieSentimentAnalysis import classifierTrainingTesting, classifierPredict
+from dbModel import Engine, Movie, Review
+from movieSentimentAnalysis import classifierPredict, classifierTrainingTesting
 
 app = Flask(__name__)
 

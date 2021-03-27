@@ -4,3 +4,7 @@ def imdbFindUrl(movieSearchUrlRef: str) -> str:
 
 def imdbMainUrl(href: str) -> str:
     return "https://www.imdb.com" + href
+
+
+def normalizeMovieName(movieName):
+    return movieName.lower()

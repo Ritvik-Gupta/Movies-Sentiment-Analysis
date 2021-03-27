@@ -13,10 +13,8 @@ from nltk import word_tokenize as tokenizeWord
 from nltk.corpus import movie_reviews as movieReviews
 from nltk.corpus import stopwords
 
+from debounceMovieInfo import debounceMovieInfo
 from customTypes import *
-from extractMovieReviews import extractReviews
-
-# from sklearn.externals import joblib
 
 
 def classifierBagWords(words: list[str]) -> classificationBagWords:
@@ -54,10 +52,10 @@ def classifierTrainingTesting() -> None:
 
 def classifierPredict(movieName: str) -> classifierPrediction:
     classifier = joblib.load("imdb_movies_reviews.pkl")
-    filmReviews = extractReviews(movieName)
+    movieReviews = debounceMovieInfo(movieName)
 
     tokens: list[list[str]] = []
-    for review in filmReviews:
+    for review in movieReviews:
         tokens.append(tokenizeWord(review))
 
     set_testing: list[classificationBagWords] = []
@@ -71,7 +69,7 @@ def classifierPredict(movieName: str) -> classifierPrediction:
     totalPositiveReviews = classification.count("pos")
     positiveReviewPercentage = 100 * totalPositiveReviews / len(classification)
 
-    return filmReviews, positiveReviewPercentage
+    return movieReviews, positiveReviewPercentage
 
 
 # classifierTrainingTesting()
