@@ -1,0 +1,5 @@
+env
+__pycache__
+.vscode
+imdb_movies_reviews.pkl
+.env
