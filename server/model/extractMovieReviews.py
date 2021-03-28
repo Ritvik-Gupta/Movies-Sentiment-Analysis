@@ -3,12 +3,11 @@ from urllib.request import urlopen as openUrlWeb
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from services.customFns import imdbFindUrl, imdbMainUrl
 from webdriver_manager.chrome import ChromeDriverManager
 
-from customFns import imdbFindUrl, imdbMainUrl
 
-
-def extractMovieReviews(movieName: str) -> list[str]:
+async def extractMovieReviews(movieName: str) -> list[str]:
     movieSearchUrlRef = movieName.replace(" ", "%20")
 
     imdbFindOpenUrl = openUrlWeb(imdbFindUrl(movieSearchUrlRef))
@@ -16,7 +15,7 @@ def extractMovieReviews(movieName: str) -> list[str]:
 
     resultTextElm = imdbFindPage.find("td", class_="result_text")
     if resultTextElm == None:
-        raise Exception("Movie cannot be Found on IMDB. Result Text Element Error")
+        raise Exception("Movie cannot be Found on IMDB", " Result Text Element Error")
 
     linkHref = resultTextElm.a["href"]
     imdbMainOpenUrl = openUrlWeb(imdbMainUrl(linkHref))
@@ -24,7 +23,7 @@ def extractMovieReviews(movieName: str) -> list[str]:
 
     userCommentsElm = imdbMainPage.find("div", class_="user-comments")
     if userCommentsElm == None:
-        raise Exception("Movie cannot be Found on IMDB. User Comments Element Error")
+        raise Exception("Movie cannot be Found on IMDB", " User Comments Element Error")
 
     links: list[str] = []
     for link in userCommentsElm.find_all("a", href=True):
@@ -43,7 +42,7 @@ def extractMovieReviews(movieName: str) -> list[str]:
 
     listerListElm = driverSourcePage.find("div", class_="lister-list")
     if listerListElm == None:
-        raise Exception("Movie cannot be Found on IMDB. Lister List Element Error")
+        raise Exception("Movie cannot be Found on IMDB", " Lister List Element Error")
 
     listedTitles = listerListElm.find_all("a", class_="title")
 
@@ -52,6 +51,3 @@ def extractMovieReviews(movieName: str) -> list[str]:
         userReviews.append(title.text.replace("\n", ""))
     driver.quit()
     return userReviews
-
-
-# reviews()

@@ -4,17 +4,21 @@
 # nltk.download("movie_reviews")
 # nltk.download("stopwords")
 
+import asyncio
 from random import shuffle
+from services.customFns import loadClassifier
 from string import punctuation as stringPunctuations
 
 import joblib
 from nltk import NaiveBayesClassifier, classify
 from nltk import word_tokenize as tokenizeWord
-from nltk.corpus import movie_reviews as movieReviews
+from nltk.corpus import movie_reviews as movieReviewsCorpus
 from nltk.corpus import stopwords
+from services.customTypes import *
 
-from debounceMovieInfo import debounceMovieInfo
-from customTypes import *
+from .debounceMovieInfo import debounceMovieInfo
+
+from services.customEnv import EnvConfig
 
 
 def classifierBagWords(words: list[str]) -> classificationBagWords:
@@ -31,13 +35,13 @@ def classifierTrainingTesting() -> None:
     positiveReviewSet: classifierTrainingSet = []
     negativeReviewSet: classifierTrainingSet = []
 
-    for fileid in movieReviews.fileids("pos"):
-        positiveReview = movieReviews.words(fileid)
+    for fileid in movieReviewsCorpus.fileids("pos"):
+        positiveReview = movieReviewsCorpus.words(fileid)
         positiveReviewSet.append((classifierBagWords(positiveReview), "pos"))
     shuffle(positiveReviewSet)
 
-    for fileid in movieReviews.fileids("neg"):
-        negativeReview = movieReviews.words(fileid)
+    for fileid in movieReviewsCorpus.fileids("neg"):
+        negativeReview = movieReviewsCorpus.words(fileid)
         negativeReviewSet.append((classifierBagWords(negativeReview), "neg"))
     shuffle(negativeReviewSet)
 
@@ -46,13 +50,13 @@ def classifierTrainingTesting() -> None:
 
     classifier = NaiveBayesClassifier.train(train_set)
     classifierAccuracy = classify.accuracy(classifier, test_set)
-    print(classifierAccuracy)
-    joblib.dump(classifier, "imdb_movies_reviews.pkl")
+    print("Classifier Accuracy :\t", classifierAccuracy)
+    joblib.dump(classifier, EnvConfig.CLASSIFIER_STORAGE)
 
 
-def classifierPredict(movieName: str) -> classifierPrediction:
-    classifier = joblib.load("imdb_movies_reviews.pkl")
-    movieReviews, isDebounced = debounceMovieInfo(movieName)
+async def classifierPredict(movieName: str) -> classifierPrediction:
+    gatherRequest = asyncio.gather(debounceMovieInfo(movieName), loadClassifier())
+    (movieReviews, isDebounced), classifier = await gatherRequest
 
     tokens: list[list[str]] = []
     for review in movieReviews:

@@ -1,16 +1,9 @@
-from datetime import datetime
-from typing import Optional
-
+from services.customEnv import EnvConfig
 from sqlalchemy import ARRAY, Column, DateTime, String
 from sqlalchemy.engine import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.expression import select
 
-Engine = create_engine(
-    "postgresql://postgres:Ageofempire0207@localhost/movies-sentiment-analysis",
-    echo=True,
-)
-
+Engine = create_engine(EnvConfig.DATABASE_CONFIG_URL, echo=True)
 BaseEntity = declarative_base()
 
 
@@ -22,4 +15,3 @@ class Movie(BaseEntity):
 
 
 Connection = Engine.connect()
-BaseEntity.metadata.create_all(bind=Engine)
