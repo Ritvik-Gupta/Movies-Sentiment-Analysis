@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 movieReviewType = Literal["pos", "neg"]
 
-classificationBagWords = dict[str, Literal[True]]
+classificationBagWords = dict[str, bool]
 
 classifierPrediction = tuple[list[str], float, bool]
 

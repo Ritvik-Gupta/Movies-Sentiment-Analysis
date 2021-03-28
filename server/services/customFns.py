@@ -1,8 +1,9 @@
-from services.customEnv import EnvConfig
-from .customEnv import EnvConfig
+from typing import Optional
 
 import joblib
 from nltk.classify.naivebayes import NaiveBayesClassifier
+
+from .customEnv import EnvConfig, castNonOptional
 
 
 def imdbFindUrl(movieSearchUrlRef: str) -> str:
@@ -17,9 +18,18 @@ def normalizeMovieName(movieName: str) -> str:
     return movieName.lower()
 
 
-def storeClassifier(classifier: NaiveBayesClassifier) -> None:
-    joblib.dump(classifier, EnvConfig.CLASSIFIER_STORAGE)
+class ClassifierStorage:
+    stored: Optional[NaiveBayesClassifier] = None
 
+    @staticmethod
+    def store(classifier: NaiveBayesClassifier) -> None:
+        joblib.dump(classifier, EnvConfig.CLASSIFIER_STORAGE)
 
-async def loadClassifier() -> NaiveBayesClassifier:
-    return joblib.load(EnvConfig.CLASSIFIER_STORAGE)
+    @staticmethod
+    async def load() -> NaiveBayesClassifier:
+        if ClassifierStorage.stored == None:
+            try:
+                ClassifierStorage.stored = joblib.load(EnvConfig.CLASSIFIER_STORAGE)
+            except Exception as err:
+                raise Exception("Naive Bayes Model PKL file not Found", *err.args)
+        return castNonOptional(ClassifierStorage.stored)

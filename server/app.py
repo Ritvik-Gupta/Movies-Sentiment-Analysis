@@ -3,7 +3,7 @@ import asyncio
 from flask import Flask
 
 from model.dbModel import BaseEntity, Engine
-from model.movieSentimentAnalysis import classifierPredict, classifierTrainingTesting
+from model.movieSentimentAnalysis import classifierPredict
 
 app = Flask(__name__)
 
@@ -22,9 +22,8 @@ def search(movieName: str):
 
 
 def main():
-    classifierTrainingTesting()
     BaseEntity.metadata.create_all(bind=Engine)
-    app.run(debug=True, port=4000, load_dotenv=True)
+    app.run(debug=True, port=4000)
 
 
 if __name__ == "__main__":

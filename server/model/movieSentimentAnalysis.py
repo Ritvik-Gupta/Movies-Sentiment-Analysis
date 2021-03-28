@@ -6,32 +6,29 @@
 
 import asyncio
 from random import shuffle
-from services.customFns import loadClassifier
 from string import punctuation as stringPunctuations
 
-import joblib
 from nltk import NaiveBayesClassifier, classify
 from nltk import word_tokenize as tokenizeWord
 from nltk.corpus import movie_reviews as movieReviewsCorpus
 from nltk.corpus import stopwords
+from services.customFns import ClassifierStorage
 from services.customTypes import *
 
 from .debounceMovieInfo import debounceMovieInfo
 
-from services.customEnv import EnvConfig
+englishStopwords = stopwords.words("english")
 
 
 def classifierBagWords(words: list[str]) -> classificationBagWords:
-    global stop_words
-    stop_words = stopwords.words("english")
     classificationBag: classificationBagWords = {}
     for word in words:
-        if not (word in stop_words or word in stringPunctuations):
+        if not (word in englishStopwords or word in stringPunctuations):
             classificationBag[word] = True
     return classificationBag
 
 
-def classifierTrainingTesting() -> None:
+def classifierTrainingTesting() -> tuple[NaiveBayesClassifier, float]:
     positiveReviewSet: classifierTrainingSet = []
     negativeReviewSet: classifierTrainingSet = []
 
@@ -45,17 +42,19 @@ def classifierTrainingTesting() -> None:
         negativeReviewSet.append((classifierBagWords(negativeReview), "neg"))
     shuffle(negativeReviewSet)
 
-    test_set = positiveReviewSet[:200] + negativeReviewSet[:200]
-    train_set = positiveReviewSet[200:] + negativeReviewSet[200:]
+    trainSet = positiveReviewSet[200:] + negativeReviewSet[200:]
+    testSet = positiveReviewSet[:200] + negativeReviewSet[:200]
 
-    classifier = NaiveBayesClassifier.train(train_set)
-    classifierAccuracy = classify.accuracy(classifier, test_set)
-    print("Classifier Accuracy :\t", classifierAccuracy)
-    joblib.dump(classifier, EnvConfig.CLASSIFIER_STORAGE)
+    classifier = NaiveBayesClassifier.train(trainSet)
+    classifierAccuracy = classify.accuracy(classifier, testSet)
+
+    return classifier, classifierAccuracy
 
 
 async def classifierPredict(movieName: str) -> classifierPrediction:
-    gatherRequest = asyncio.gather(debounceMovieInfo(movieName), loadClassifier())
+    gatherRequest = asyncio.gather(
+        debounceMovieInfo(movieName), ClassifierStorage.load()
+    )
     (movieReviews, isDebounced), classifier = await gatherRequest
 
     tokens: list[list[str]] = []
@@ -74,18 +73,3 @@ async def classifierPredict(movieName: str) -> classifierPrediction:
     positiveReviewPercentage = 100 * totalPositiveReviews / len(classification)
 
     return movieReviews, positiveReviewPercentage, isDebounced
-
-
-# classifierTrainingTesting()
-
-# movieName = input("Enter name of movie:")
-# filmReviews, positiveReviewPercentage = classifierPredict(movieName)
-# print(
-#     "The film {} has got {} percent positive reviews".format(
-#         movieName, positiveReviewPercentage
-#     )
-# )
-# if positive_per > 60:
-#     print("overall impression of movie is good")
-# else:
-#     print("overall impression of movie is bad")
