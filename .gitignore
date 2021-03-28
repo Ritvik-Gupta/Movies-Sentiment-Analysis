@@ -1,5 +1,29 @@
-env
-__pycache__
-.vscode
+
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+env/
+node_modules/
+__pycache__/
+
+# testing
+coverage/
+
+# next.js
+.next/
+out/
+next-env.d.ts
+
+# production
+build/
 imdb-movie-reviews.pkl
+
+# misc
+.vscode
+
+# local env files
 .env
+
+#Configs
+package-lock.json
