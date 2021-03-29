@@ -1,7 +1,7 @@
 import { ServerStyleSheets } from "@material-ui/core/styles"
 import Document, { Head, Html, Main, NextScript } from "next/document"
 import { Children } from "react"
-import { theme } from "../src/theme"
+import { theme } from "../services/custom.theme"
 
 class CustomDocument extends Document {
 	render() {

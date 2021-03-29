@@ -13,7 +13,8 @@ export const theme = createMuiTheme({
 			main: red.A400,
 		},
 		background: {
-			default: "#fff",
+			default: "#37474f",
 		},
 	},
+	shape: { borderRadius: 10 },
 })

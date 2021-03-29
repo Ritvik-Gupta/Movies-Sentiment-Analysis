@@ -4,7 +4,7 @@ import { NextPage } from "next"
 import { AppProps } from "next/app"
 import Head from "next/head"
 import { Fragment, useEffect } from "react"
-import { theme } from "../src/theme"
+import { theme } from "../services/custom.theme"
 
 const CustomApp: NextPage<AppProps> = ({ Component, pageProps }) => {
 	useEffect(() => {
