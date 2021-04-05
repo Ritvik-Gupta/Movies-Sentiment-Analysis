@@ -55,7 +55,7 @@ async def classifierPredict(movieName: str) -> classifierPrediction:
     gatherRequest = asyncio.gather(
         debounceMovieInfo(movieName), ClassifierStorage.load()
     )
-    (movieReviews, isDebounced), classifier = await gatherRequest
+    (movieReviews, fetchState), classifier = await gatherRequest
 
     tokens: list[list[str]] = []
     for review in movieReviews:
@@ -72,4 +72,4 @@ async def classifierPredict(movieName: str) -> classifierPrediction:
     totalPositiveReviews = classification.count("pos")
     positiveReviewPercentage = 100 * totalPositiveReviews / len(classification)
 
-    return movieReviews, positiveReviewPercentage, isDebounced
+    return movieReviews, positiveReviewPercentage, fetchState

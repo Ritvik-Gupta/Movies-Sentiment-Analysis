@@ -1,32 +1,36 @@
 from datetime import datetime
-from typing import Optional
-import asyncio
 
 from services.customEnv import EnvConfig
 from services.customFns import normalizeMovieName
+from services.customTypes import (
+    debouncedMovieStateInfo,
+    fetchStateInfo,
+    storedMovieInfo,
+)
 from sqlalchemy import insert, select, update
 
 from .dbModel import Connection, Movie
 from .extractMovieReviews import extractMovieReviews
-from services.customTypes import storedMovieInfo
 
 
-async def debounceMovieInfo(movieName: str) -> tuple[list[str], bool]:
+async def debounceMovieInfo(movieName: str) -> debouncedMovieStateInfo:
     normalizedMovieName = normalizeMovieName(movieName)
     storedMovie: storedMovieInfo = Connection.execute(
         select([Movie]).where(Movie.name == normalizedMovieName)
     ).fetchone()
-    isDebounced = False
+    fetchState: fetchStateInfo
 
     if storedMovie == None:
         movieReviews = await extractMovieReviews(normalizedMovieName)
+        fetchState = "Scraped from Web"
         mutation = insert(Movie).values(
             name=normalizedMovieName,
             update_date=datetime.now(),
             reviews=movieReviews,
         )
-    elif (datetime.now() - storedMovie[1]).seconds > EnvConfig.MOVIE_SESSION_TIMEOUT:
+    elif EnvConfig.SESSION_TIMEOUT <= (datetime.now() - storedMovie[1]).total_seconds():
         movieReviews = await extractMovieReviews(normalizedMovieName)
+        fetchState = "Refectched and Cached"
         mutation = (
             update(Movie)
             .where(Movie.name == normalizedMovieName)
@@ -34,10 +38,11 @@ async def debounceMovieInfo(movieName: str) -> tuple[list[str], bool]:
         )
     else:
         movieReviews = storedMovie[2]
+        fetchState = "Read from Cache"
         mutation = None
         isDebounced = True
 
     if mutation != None:
         Connection.execute(mutation)
 
-    return movieReviews, isDebounced
+    return movieReviews, fetchState

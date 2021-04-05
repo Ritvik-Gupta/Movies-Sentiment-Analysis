@@ -1,4 +1,6 @@
 import asyncio
+from services.customEnv import EnvConfig
+from services.customFns import ClassifierStorage
 
 from flask import Flask
 
@@ -11,20 +13,33 @@ app = Flask(__name__)
 @app.route("/search/<movieName>")
 def search(movieName: str):
     try:
-        reviews, percentage, isDebounced = asyncio.run(classifierPredict(movieName))
+        reviews, percentage, fetchState = asyncio.run(classifierPredict(movieName))
+        message: str
+
+        if percentage > 60:
+            message = "Good"
+        elif percentage > 50:
+            message = "Average"
+        elif percentage > 40:
+            message = "Below Average"
+        else:
+            message = "Bad"
+
         return {
             "positiveReviewPercentage": percentage,
-            "isDebounced": isDebounced,
+            "fetchState": fetchState,
             "movieReviews": reviews,
+            "message": message,
         }
     except Exception as err:
         return {"error": err.args}
 
 
-def main():
+async def main():
     BaseEntity.metadata.create_all(bind=Engine)
+    await ClassifierStorage.load()
     app.run(debug=True, port=4000)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -15,6 +15,7 @@ import MovieIcon from "@material-ui/icons/Movie"
 import IconButton from "@material-ui/core/IconButton"
 import TheatersIcon from "@material-ui/icons/Theaters"
 import { useRouter } from "next/dist/client/router"
+import Tooltip from "@material-ui/core/Tooltip"
 
 const useStyles = makeStyles(() =>
 	createStyles({
@@ -32,20 +33,20 @@ export const MoviesGrid: NextPage<IMoviesGridProps> = ({ movies }) => {
 	const classes = useStyles()
 	const router = useRouter()
 
-	const onCardClick = (imdbID: string) => () => {
-		router.push(`movie/${imdbID}`)
-	}
+	const onCardClick = (imdbID: string) => () => router.push(`movie/${imdbID}`)
 
 	return (
 		<div className={classes.root}>
 			<Grid container spacing={2}>
-				{movies.map(({ imdbID, Title, Poster, Type }, idx) => (
-					<Grid item key={imdbID} xs={12} sm={6} md={4} lg={3} onClick={onCardClick(imdbID)}>
+				{movies.map(({ imdbID, Title, Poster, Type, Year }, idx) => (
+					<Grid item key={imdbID} xs={12} sm={6} md={4} lg={3}>
 						<Grow in={true} timeout={idx * 500}>
 							<Paper elevation={10}>
-								<Card>
+								<Card onClick={onCardClick(imdbID)}>
 									<CardActionArea>
-										<CardMedia component='img' alt={Title} image={Poster} title={Title} />
+										<Tooltip title={Year} arrow>
+											<CardMedia component='img' alt={Title} image={Poster} title={Title} />
+										</Tooltip>
 										<CardContent>
 											<Typography gutterBottom variant='h5' component='h2'>
 												{Title}
