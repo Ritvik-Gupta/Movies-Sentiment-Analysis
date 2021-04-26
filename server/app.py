@@ -1,11 +1,10 @@
 import asyncio
-from services.customEnv import EnvConfig
-from services.customFns import ClassifierStorage
 
 from flask import Flask
 
 from model.dbModel import BaseEntity, Engine
 from model.movieSentimentAnalysis import classifierPredict
+from services.customFns import ClassifierStorage
 
 app = Flask(__name__)
 
@@ -14,7 +13,6 @@ app = Flask(__name__)
 def search(movieName: str):
     try:
         reviews, percentage, fetchState = asyncio.run(classifierPredict(movieName))
-        message: str
 
         if percentage > 60:
             message = "Good"

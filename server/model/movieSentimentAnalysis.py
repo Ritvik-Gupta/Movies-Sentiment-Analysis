@@ -13,7 +13,12 @@ from nltk import word_tokenize as tokenizeWord
 from nltk.corpus import movie_reviews as movieReviewsCorpus
 from nltk.corpus import stopwords
 from services.customFns import ClassifierStorage
-from services.customTypes import *
+from services.customTypes import (
+    classificationBagWords,
+    classifierPrediction,
+    classifierTrainingSet,
+    movieReviewType,
+)
 
 from .debounceMovieInfo import debounceMovieInfo
 
