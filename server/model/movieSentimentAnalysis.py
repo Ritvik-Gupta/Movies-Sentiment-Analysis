@@ -66,12 +66,12 @@ async def classifierPredict(movieName: str) -> classifierPrediction:
     for review in movieReviews:
         tokens.append(tokenizeWord(review))
 
-    set_testing: list[classificationBagWords] = []
+    classifiedBagWords: list[classificationBagWords] = []
     for review in tokens:
-        set_testing.append(classifierBagWords(review))
+        classifiedBagWords.append(classifierBagWords(review))
 
     classification: list[movieReviewType] = []
-    for review in set_testing:
+    for review in classifiedBagWords:
         classification.append(classifier.classify(review))
 
     totalPositiveReviews = classification.count("pos")
