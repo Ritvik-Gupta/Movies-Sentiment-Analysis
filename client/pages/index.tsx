@@ -2,13 +2,13 @@ import Backdrop from "@material-ui/core/Backdrop"
 import CircularProgress from "@material-ui/core/CircularProgress"
 import Container from "@material-ui/core/Container"
 import Slide from "@material-ui/core/Slide"
-import Snackbar, { SnackbarCloseReason } from "@material-ui/core/Snackbar"
+import Snackbar from "@material-ui/core/Snackbar"
 import { createStyles, makeStyles } from "@material-ui/core/styles"
 import TextField from "@material-ui/core/TextField"
 import { AxiosResponse } from "axios"
 import { MoviesGrid } from "components/MoviesGrid"
 import { NextPage } from "next"
-import { ChangeEvent, FormEvent, SyntheticEvent, useReducer } from "react"
+import { FormEvent, useReducer } from "react"
 import { ApiSearchResponse, ImdbApi } from "services/api.imdb"
 import { apiSearchReducer, inputReducer } from "services/custom.reducers"
 
@@ -46,15 +46,6 @@ const Index: NextPage<IIndexProps> = ({}) => {
 		setMovieName({ type: "CHANGE", value: "" })
 	}
 
-	const onMovieNameInputChange = (event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-		setMovies({ type: "CONTINUE" })
-		setMovieName({ type: "CHANGE", value: event.target.value })
-	}
-
-	const onSnackbarClose = (_: SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
-		if (reason === "timeout") setMovies({ type: "CONTINUE" })
-	}
-
 	return (
 		<Container className={classes.container} fixed>
 			<form onSubmit={onFormSubmit}>
@@ -64,7 +55,10 @@ const Index: NextPage<IIndexProps> = ({}) => {
 					value={movieName}
 					label='Movie Name'
 					variant='filled'
-					onChange={onMovieNameInputChange}
+					onChange={event => {
+						setMovies({ type: "CONTINUE" })
+						setMovieName({ type: "CHANGE", value: event.target.value })
+					}}
 					disabled={movies.isLoading}
 				/>
 			</form>
@@ -74,7 +68,9 @@ const Index: NextPage<IIndexProps> = ({}) => {
 			<Snackbar
 				open={movies.error !== undefined}
 				autoHideDuration={5000}
-				onClose={onSnackbarClose}
+				onClose={(_, reason) => {
+					if (reason === "timeout") setMovies({ type: "CONTINUE" })
+				}}
 				anchorOrigin={{
 					horizontal: "left",
 					vertical: "bottom",
