@@ -40,7 +40,6 @@ async def debounceMovieInfo(movieName: str) -> debouncedMovieStateInfo:
         movieReviews = storedMovie[2]
         fetchState = "Read from Cache"
         mutation = None
-        isDebounced = True
 
     if mutation != None:
         Connection.execute(mutation)
