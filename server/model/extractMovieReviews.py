@@ -23,7 +23,7 @@ async def extractMovieReviews(movieName: str) -> list[str]:
 
     userCommentsElm = imdbMainPage.find("div", class_="user-comments")
     if userCommentsElm == None:
-        raise Exception("Movie cannot be Found on IMDB", " User Comments Element Error")
+        raise Exception("Movie cannot be Found on IMDB", "User Comments Element Error")
 
     links: list[str] = []
     for link in userCommentsElm.find_all("a", href=True):

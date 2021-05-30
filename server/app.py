@@ -1,12 +1,14 @@
 import asyncio
 
 from flask import Flask
+from flask_cors import CORS
 
 from model.dbModel import BaseEntity, Engine
 from model.movieSentimentAnalysis import classifierPredict
 from services.customFns import ClassifierStorage
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/search/*": {"origins": "*"}})
 
 
 @app.route("/search/<movieName>")

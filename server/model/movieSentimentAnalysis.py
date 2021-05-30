@@ -57,10 +57,9 @@ def classifierTrainingTesting() -> tuple[NaiveBayesClassifier, float]:
 
 
 async def classifierPredict(movieName: str) -> classifierPrediction:
-    gatherRequest = asyncio.gather(
+    (movieReviews, fetchState), classifier = await asyncio.gather(
         debounceMovieInfo(movieName), ClassifierStorage.load()
     )
-    (movieReviews, fetchState), classifier = await gatherRequest
 
     tokens: list[list[str]] = []
     for review in movieReviews:

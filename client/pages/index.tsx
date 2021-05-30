@@ -8,7 +8,7 @@ import TextField from "@material-ui/core/TextField"
 import { AxiosResponse } from "axios"
 import { MoviesGrid } from "components/MoviesGrid"
 import { NextPage } from "next"
-import { FormEvent, useReducer } from "react"
+import { FormEvent, useCallback, useReducer } from "react"
 import { ApiSearchResponse, ImdbApi } from "services/api.imdb"
 import { apiSearchReducer, inputReducer } from "services/custom.reducers"
 
@@ -32,19 +32,22 @@ const Index: NextPage<IIndexProps> = ({}) => {
 	const [movieName, setMovieName] = useReducer(inputReducer, "")
 	const [movies, setMovies] = useReducer(apiSearchReducer, { search: [], isLoading: false })
 
-	const onFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
-		event.preventDefault()
-		setMovies({ type: "LOADING" })
+	const onFormSubmit = useCallback(
+		async (event: FormEvent<HTMLFormElement>) => {
+			event.preventDefault()
+			setMovies({ type: "LOADING" })
 
-		const { data }: AxiosResponse<ApiSearchResponse> = await ImdbApi({ params: { s: movieName } })
+			const { data }: AxiosResponse<ApiSearchResponse> = await ImdbApi({ params: { s: movieName } })
 
-		setMovies(
-			data.Response == "True"
-				? { type: "ADD", search: data.Search }
-				: { type: "ERROR", error: data.Error }
-		)
-		setMovieName({ type: "CHANGE", value: "" })
-	}
+			setMovies(
+				data.Response == "True"
+					? { type: "ADD", search: data.Search }
+					: { type: "ERROR", error: data.Error }
+			)
+			setMovieName({ type: "CLEAR" })
+		},
+		[movieName, ImdbApi, setMovies, setMovieName]
+	)
 
 	return (
 		<Container className={classes.container} fixed>
