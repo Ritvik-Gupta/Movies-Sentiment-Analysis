@@ -29,14 +29,14 @@ async def debounceMovieInfo(movieName: str) -> debouncedMovieStateInfo:
             update_date=datetime.now(),
             reviews=movieReviews,
         )
-    # elif EnvConfig.SESSION_TIMEOUT <= (datetime.now() - storedMovie[1]).total_seconds():
-    #     movieReviews = await extractMovieReviews(normalizedMovieName)
-    #     fetchState = "Refectched and Cached"
-    #     mutation = (
-    #         update(Movie)
-    #         .where(Movie.name == normalizedMovieName)
-    #         .values(update_date=datetime.now(), reviews=movieReviews)
-    # )
+    elif EnvConfig.SESSION_TIMEOUT <= (datetime.now() - storedMovie[1]).total_seconds():
+        movieReviews = await extractMovieReviews(normalizedMovieName)
+        fetchState = "Refectched and Cached"
+        mutation = (
+            update(Movie)
+            .where(Movie.name == normalizedMovieName)
+            .values(update_date=datetime.now(), reviews=movieReviews)
+        )
     else:
         movieReviews = storedMovie[2]
         fetchState = "Read from Cache"
