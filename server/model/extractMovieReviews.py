@@ -21,22 +21,25 @@ async def extractMovieReviews(movieName: str) -> list[str]:
     imdbMainOpenUrl = openUrlWeb(imdbMainUrl(linkHref))
     imdbMainPage = BeautifulSoup(imdbMainOpenUrl, "lxml")
 
-    userCommentsElm = imdbMainPage.find("div", class_="user-comments")
-    if userCommentsElm == None:
-        raise Exception("Movie cannot be Found on IMDB", "User Comments Element Error")
-
-    links: list[str] = []
-    for link in userCommentsElm.find_all("a", href=True):
-        links.append(link["href"])
-    lastLink = links[-1]
+    reviewsHeaderLink = imdbMainPage.find(
+        "div", attrs={"data-testid": "reviews-header"}
+    )
+    if reviewsHeaderLink == None:
+        raise Exception(
+            "Movie reviews cannot be found on IMDB",
+            "User Reviews Header Link does not exist",
+        )
 
     # driver = webdriver.Chrome("C:\\Users\\dell\\Desktop\\chromedriver.exe")
     driver = webdriver.Chrome(ChromeDriverManager().install())
-    driver.get(imdbMainUrl(lastLink))
-    for title in range(20):
-        loadMoreButton = driver.find_element_by_class_name("load-more-data")
-        loadMoreButton.click()
-        time.sleep(1)
+    driver.get(imdbMainUrl(reviewsHeaderLink.a["href"]))
+    for _ in range(20):
+        try:
+            loadMoreButton = driver.find_element_by_class_name("load-more-data")
+            loadMoreButton.click()
+            time.sleep(1)
+        except:
+            break
     driverPageSourceUrl = driver.page_source
     driverSourcePage = BeautifulSoup(driverPageSourceUrl, "lxml")
 
